@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portafolio de Artes Digitales – Asistente Estudiantil</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --border: #2a2a4a;
+      --accent: #7c6aff;
+      --accent2: #a78bfa;
+      --accent-glow: rgba(124,106,255,0.25);
+      --user-bubble: #312b6e;
+      --bot-bubble: #1e1e38;
+      --text: #e2e2f0;
+      --text-muted: #8888aa;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --radius: 18px;
+      --radius-sm: 10px;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+    }
+    .bot-avatar {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), #5b4fcf);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+    .header-info h1 { font-size: 17px; font-weight: 700; }
+    .header-info p  { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .status-dot {
+      width: 8px; height: 8px;
+      background: var(--green);
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    /* ── Layout ── */
+    .main-wrap { display: flex; flex: 1; min-height: 0; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 270px;
+      flex-shrink: 0;
+      background: var(--surface2);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sidebar h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--text-muted);
+      padding: 4px 4px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .topic-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      line-height: 1.35;
+    }
+    .topic-btn:hover, .topic-btn.active {
+      background: var(--accent-glow);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+    .topic-btn .icon { font-size: 16px; flex-shrink: 0; }
+
+    /* ── Chat area ── */
+    .chat-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Message bubbles ── */
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      max-width: 82%;
+      animation: fadeUp .25s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .msg-avatar.bot-av {
+      background: linear-gradient(135deg, var(--accent), #5b4fcf);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .msg-avatar.user-av { background: #2d2d55; }
+    .bubble {
+      padding: 11px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 100%;
+    }
+    .msg-row.bot  .bubble { background: var(--bot-bubble); border-bottom-left-radius: 4px; }
+    .msg-row.user .bubble { background: var(--user-bubble); border-bottom-right-radius: 4px; color: #ddd8ff; }
+
+    .bubble h3 { font-size: 14px; color: var(--accent2); margin-bottom: 6px; margin-top: 10px; }
+    .bubble h3:first-child { margin-top: 0; }
+    .bubble ul { padding-left: 18px; margin: 6px 0; }
+    .bubble li { margin-bottom: 4px; }
+    .bubble code {
+      background: rgba(255,255,255,0.08);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #c4b5fd;
+    }
+    .bubble .tag {
+      display: inline-block;
+      background: rgba(124,106,255,0.2);
+      border: 1px solid rgba(124,106,255,0.4);
+      color: var(--accent2);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin: 2px 2px 0 0;
+    }
+    .bubble .chip-row { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .chip {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--text-muted);
+    }
+    .chip:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--accent2); }
+
+    .pts-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+      color: #e9d5ff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      margin-left: 6px;
+    }
+    .check-item { padding: 5px 0; display: flex; gap: 8px; align-items: flex-start; }
+    .check-icon { color: var(--green); flex-shrink: 0; margin-top: 1px; }
+    .warn-icon  { color: var(--yellow); flex-shrink: 0; margin-top: 1px; }
+
+    .typing-bubble { display: flex; gap: 5px; align-items: center; padding: 13px 18px; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); opacity: .5; animation: blink 1.2s infinite; }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+    @keyframes blink { 0%,80%,100%{opacity:.3} 40%{opacity:1} }
+
+    /* ── Input area ── */
+    .input-area {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    textarea {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      padding: 11px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      min-height: 46px;
+      max-height: 120px;
+      line-height: 1.5;
+      transition: border-color .2s;
+    }
+    textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+    textarea::placeholder { color: var(--text-muted); }
+    .send-btn {
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #5b4fcf);
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform .15s, box-shadow .15s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { transform: scale(1.07); box-shadow: 0 0 16px var(--accent-glow); }
+    .send-btn:active { transform: scale(.95); }
+
+    @media (max-width: 640px) { .sidebar { display: none; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="bot-avatar">🎨</div>
+  <div class="header-info">
+    <h1>Asistente de Portafolio — Artes Digitales</h1>
+    <p><span class="status-dot"></span>Aquí para ayudarte con tu guía y rúbrica del portafolio</p>
+  </div>
+</header>
+
+<div class="main-wrap">
+
+  <!-- ── BARRA LATERAL ── -->
+  <aside class="sidebar">
+    <h2>Temas Principales</h2>
+    <button class="topic-btn" onclick="askTopic('folder')"><span class="icon">📁</span>Configuración de Carpetas</button>
+    <button class="topic-btn" onclick="askTopic('dreamweaver')"><span class="icon">🖥️</span>Abrir en Dreamweaver</button>
+    <button class="topic-btn" onclick="askTopic('colors')"><span class="icon">🎨</span>Cambiar Colores y Fuentes</button>
+    <button class="topic-btn" onclick="askTopic('particles')"><span class="icon">✨</span>Fondo de Partículas</button>
+    <button class="topic-btn" onclick="askTopic('personal')"><span class="icon">👤</span>Información Personal</button>
+    <button class="topic-btn" onclick="askTopic('gallery')"><span class="icon">🖼️</span>Galería / Proyectos</button>
+    <button class="topic-btn" onclick="askTopic('lightbox')"><span class="icon">🔍</span>Lightbox</button>
+    <button class="topic-btn" onclick="askTopic('beforeafter')"><span class="icon">↔️</span>Antes y Después</button>
+    <button class="topic-btn" onclick="askTopic('aos')"><span class="icon">🌀</span>Animaciones al Desplazar (AOS)</button>
+    <button class="topic-btn" onclick="askTopic('publish')"><span class="icon">🚀</span>Publicar el Portafolio</button>
+    <button class="topic-btn" onclick="askTopic('rubric')"><span class="icon">📋</span>Resumen de la Rúbrica</button>
+    <button class="topic-btn" onclick="askTopic('content_req')"><span class="icon">✅</span>Requisitos de Contenido</button>
+    <button class="topic-btn" onclick="askTopic('design_req')"><span class="icon">🎭</span>Requisitos de Diseño</button>
+    <button class="topic-btn" onclick="askTopic('function_req')"><span class="icon">⚙️</span>Requisitos de Funcionalidad</button>
+    <button class="topic-btn" onclick="askTopic('checklist')"><span class="icon">📝</span>Lista de Verificación Final</button>
+  </aside>
+
+  <!-- ── CHAT ── -->
+  <div class="chat-wrap">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <textarea id="userInput" placeholder="Escribe tu pregunta sobre el portafolio…" rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" onclick="sendMessage()" title="Enviar">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════
+   BASE DE CONOCIMIENTO (en español)
+   ════════════════════════════════════════════════ */
+const KB = {
+
+  greeting: {
+    patterns: [/^(hola|buenos (días|dia|tardes|noches)|hey|qué tal|buenas|saludos|hi|hello)/i],
+    response: () => `
+<h3>👋 ¡Hola!</h3>
+Soy tu Asistente de Portafolio de Artes Digitales. Conozco todo sobre la <strong>guía del portafolio</strong> y la <strong>rúbrica</strong>. ¡Pregúntame lo que necesites!
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('checklist')">📝 Lista Final</span>
+  <span class="chip" onclick="askTopic('rubric')">📋 Ver la Rúbrica</span>
+  <span class="chip" onclick="askTopic('gallery')">🖼️ Ayuda con la Galería</span>
+  <span class="chip" onclick="askTopic('publish')">🚀 Publicar</span>
+</div>`
+  },
+
+  folder: {
+    patterns: [/carpeta|organiz|estructura.*archivo|configurac|renombr.*imagen|imagen.*carpeta|antes.*dreamweaver|folder|organiz|file.?struct|set.?up/i],
+    response: () => `
+<h3>📁 Antes de Empezar — Configuración de Carpetas</h3>
+Una buena organización de carpetas evita imágenes rotas y archivos perdidos. Sigue estos tres pasos <strong>antes</strong> de abrir Dreamweaver:
+
+<ul>
+  <li><strong>Paso 1 — Crea tu carpeta del portafolio.</strong> Crea una carpeta dedicada (por ejemplo, <code>mi-portafolio</code>) en un lugar fácil de encontrar.</li>
+  <li><strong>Paso 2 — Reúne y renombra tus imágenes.</strong> Guarda todas las imágenes dentro de una subcarpeta llamada <code>images/</code>. Renombra los archivos con nombres simples, en minúsculas y sin espacios (p. ej. <code>proyecto1.jpg</code>).</li>
+  <li><strong>Paso 3 — Guardar.</strong> Siempre guarda el archivo <code>portfolio-template.html</code> dentro de esa misma carpeta del portafolio, no fuera de ella.</li>
+</ul>
+
+Cuando termines, tu carpeta debe verse así:
+<code>mi-portafolio/</code><br>
+&nbsp;&nbsp;<code>portfolio-template.html</code><br>
+&nbsp;&nbsp;<code>images/</code> → todas tus imágenes aquí
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('dreamweaver')">Siguiente: Abrir en Dreamweaver</span>
+  <span class="chip" onclick="askTopic('gallery')">Agregar imágenes a la galería</span>
+</div>`
+  },
+
+  dreamweaver: {
+    patterns: [/dreamweaver|abrir.*plantilla|abrir.*template|dw |editar.*archivo|lado.*código|open.*template/i],
+    response: () => `
+<h3>🖥️ Abrir tu Plantilla en Dreamweaver (Paso 1)</h3>
+<ul>
+  <li>Abre Adobe Dreamweaver.</li>
+  <li>Ve a <strong>Archivo → Abrir</strong> y navega hasta tu archivo <code>portfolio-template.html</code>.</li>
+  <li>Dreamweaver muestra el <strong>código a la izquierda</strong> y una <strong>vista previa en vivo a la derecha</strong>.</li>
+  <li>Usa <strong>Ctrl+F</strong> (Windows) o <strong>Cmd+F</strong> (Mac) para buscar cualquier texto y saltar directamente a él.</li>
+  <li>Cada lugar donde debes hacer un cambio está marcado con el símbolo <strong>✏️</strong> en los comentarios del código — busca <code>✏️</code> para navegar de edición en edición.</li>
+</ul>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('colors')">Paso 2: Colores y Fuentes</span>
+  <span class="chip" onclick="askTopic('personal')">Paso 3: Información Personal</span>
+</div>`
+  },
+
+  colors: {
+    patterns: [/color|fuente|tipograf|letra|hex|paleta|coolors|serif|sans.?serif|encabezado|cuerpo|google.*font|--font|cambiar.*estilo|font/i],
+    response: () => `
+<h3>🎨 Paso 2 — Personalizar Colores y Fuentes</h3>
+
+<h3>Cambiar Colores</h3>
+<ul>
+  <li>En Dreamweaver, presiona <strong>Ctrl+F</strong> y busca <code>STEP 1: CUSTOMIZE YOUR COLORS</code>.</li>
+  <li>Encontrarás variables CSS — reemplaza los <strong>códigos hexadecimales</strong> (como <code>#7c6aff</code>) con cualquier color que desees.</li>
+  <li>Cambiar estas variables actualiza <em>todo tu portafolio al instante</em>.</li>
+</ul>
+Herramientas útiles de color: <code>coolors.co</code> · <code>htmlcolorcodes.com</code> · <code>color.adobe.com</code>
+
+<h3>Cambiar Fuentes</h3>
+Tu plantilla usa <strong>dos Fuentes de Google</strong> — una para los encabezados (<code>--font-heading</code>) y otra para el texto del cuerpo (<code>--font-body</code>). Para cambiarlas, actualiza tanto el <code>&lt;link&gt;</code> de Google Fonts al inicio del archivo como las dos variables CSS.
+Explora fuentes en <code>fonts.google.com</code>.
+
+<strong>Nota de la rúbrica:</strong> Se requiere una fuente <em>serif o display</em> para los encabezados y una fuente <em>sans-serif</em> para el texto del cuerpo. <span class="tag">Req. Diseño</span>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('particles')">Fondo de Partículas</span>
+  <span class="chip" onclick="askTopic('design_req')">Requisitos de Diseño</span>
+</div>`
+  },
+
+  particles: {
+    patterns: [/partícula|particula|fondo.*hero|hero.*fondo|fondo.*animad|particleStyle|estrellas|stars|galaxy|nieve|snow|burbujas|bubbles/i],
+    response: () => `
+<h3>✨ Fondo de Partículas</h3>
+La sección hero de tu portafolio tiene un fondo de partículas animadas incorporado. Para cambiar su estilo:
+<ul>
+  <li>Presiona <strong>Ctrl+F</strong> y busca <code>particleStyle</code>.</li>
+  <li>Encontrarás una línea como: <code>const particleStyle = 'stars'</code></li>
+  <li>Reemplaza <code>'stars'</code> con una de las opciones disponibles a continuación.</li>
+</ul>
+Estilos de partículas disponibles:
+<div class="chip-row">
+  <span class="tag">stars</span><span class="tag">network</span><span class="tag">snow</span>
+  <span class="tag">bubbles</span><span class="tag">fireflies</span><span class="tag">embers</span>
+  <span class="tag">confetti</span><span class="tag">aurora</span><span class="tag">rain</span>
+  <span class="tag">neon</span><span class="tag">dust</span><span class="tag">sparkles</span>
+  <span class="tag">none (desactiva las partículas)</span>
+</div>
+
+<strong>Nota de la rúbrica:</strong> El estilo de partículas y/o sus ajustes <strong>deben cambiarse del predeterminado.</strong> ¡Simplemente cambiar a un estilo diferente cuenta! <span class="tag">Req. Diseño</span>`
+  },
+
+  personal: {
+    patterns: [/personal|mi nombre|sobre mí|sobre mi|bio|correo|email|nombre.*campo|logo.*nombre|pie.*página|pie.*pagina|navegación|navegacion|pencil|✏️/i],
+    response: () => `
+<h3>👤 Paso 3 — Agregar tu Información Personal</h3>
+Cada edición que necesitas hacer está marcada con un <strong>✏️</strong> en el código. Usa <strong>Ctrl+F → busca ✏️</strong> para saltar de una a la siguiente.
+
+<h3>Cambios a realizar (en orden):</h3>
+<ul>
+  <li>🔤 <strong>Logo de navegación</strong> — tu nombre en la barra de navegación superior izquierda</li>
+  <li>🦸 <strong>Encabezado del hero</strong> — el nombre grande que se muestra en la sección hero</li>
+  <li>✉️ <strong>Correo electrónico</strong> — reemplaza el marcador de posición con tu <strong>correo escolar</strong></li>
+  <li>📝 <strong>Biografía "Sobre mí"</strong> — reemplaza <em>ambos</em> párrafos de ejemplo con una bio real y personalizada</li>
+  <li>🔧 <strong>Etiquetas de herramientas/software</strong> — actualiza para reflejar las herramientas que realmente usas (ej. "Photoshop", "Procreate")</li>
+  <li>©️ <strong>Copyright del pie de página</strong> — actualiza con tu nombre</li>
+</ul>
+
+<strong>Nota de la rúbrica:</strong> Todo el texto debe ser gramaticalmente correcto con puntuación adecuada. <span class="tag">Req. Contenido</span>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('gallery')">Paso 4: Agregar Proyectos a la Galería</span>
+</div>`
+  },
+
+  gallery: {
+    patterns: [/galería|galeria|proyecto|tarjeta|diapositiva|carrusel|paisaje|retrato|aspect.*ratio|data-category|data-title|data-desc|slide-info|agregar.*proyecto|nueva.*diapositiva|gallery|landscape|portrait/i],
+    response: () => `
+<h3>🖼️ Paso 4 — Agregar tus Proyectos a la Galería</h3>
+Tu portafolio tiene <strong>dos galerías</strong>: Galería 1 (horizontal/paisaje) y Galería 2 (vertical/retrato).
+
+<h3>Configurar la Forma de la Imagen</h3>
+Busca <code>--gallery-ratio</code> para encontrar el ajuste de proporción de aspecto. Configúralo una vez y todas las tarjetas tomarán esa forma.
+
+<h3>Agregar tus Imágenes</h3>
+<ul>
+  <li>Primero coloca todas las imágenes en tu subcarpeta <code>images/</code>.</li>
+  <li>En cada tarjeta de proyecto, actualiza el <code>src</code> a <code>images/tu-archivo.jpg</code>.</li>
+</ul>
+
+<h3>Editar una Tarjeta de Proyecto — 4 cosas a actualizar:</h3>
+<ul>
+  <li><code>data-category</code> — el medio o software usado (ej. <code>"Photoshop"</code>)</li>
+  <li><code>data-title</code> — el título del trabajo</li>
+  <li><code>data-desc</code> — una breve descripción del trabajo</li>
+  <li><strong>sección slide-info</strong> — la etiqueta visible, el título <code>h3</code> y la descripción deben <strong>coincidir</strong> con los atributos de datos anteriores</li>
+</ul>
+
+<h3>Agregar Más Proyectos</h3>
+Copia todo el bloque <code>&lt;div class="swiper-slide"&gt;...&lt;/div&gt;</code> y pégalo justo después de la última tarjeta de proyecto en la galería. Luego actualiza la imagen, categoría, título y descripción.
+<ul>
+  <li>Para la Galería 1 (paisaje): busca <code>id="gallery-landscape"</code></li>
+  <li>Para la Galería 2 (retrato): busca <code>id="gallery-portrait"</code></li>
+</ul>
+
+<strong>Nota de la rúbrica:</strong> Necesitas <strong>mínimo 4 obras en horizontal</strong> y <strong>mínimo 4 obras en vertical</strong>. <span class="tag">Req. Contenido</span>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('lightbox')">Info del Lightbox</span>
+  <span class="chip" onclick="askTopic('beforeafter')">Paso 5: Antes y Después</span>
+  <span class="chip" onclick="askTopic('content_req')">Requisitos de Contenido</span>
+</div>`
+  },
+
+  lightbox: {
+    patterns: [/lightbox|pantalla.*completa|imagen.*completa|ventana.*emergen|clic.*imagen|imagen.*clic|overlay|navegar.*proyecto|popup/i],
+    response: () => `
+<h3>🔍 El Lightbox</h3>
+¡Buenas noticias — <strong>el lightbox no requiere ninguna configuración!</strong> Funciona automáticamente para ambas galerías.
+
+Cuando un visitante hace clic en cualquier imagen del proyecto:
+<ul>
+  <li>El fondo de la página se oscurece</li>
+  <li>La imagen se muestra en pantalla completa con su <strong>título y descripción</strong></li>
+  <li>Los botones de flecha ← → permiten navegar entre todos los proyectos sin cerrar</li>
+  <li>Soporte de teclado — teclas de flecha para navegar, <strong>Escape</strong> para cerrar</li>
+  <li>Haz clic en cualquier lugar del fondo oscuro para cerrar</li>
+</ul>
+
+El lightbox obtiene su información de los atributos <code>data-title</code> y <code>data-desc</code> — ¡asegúrate de que estén completados con precisión! <span class="tag">Req. Funcionalidad</span>`
+  },
+
+  beforeafter: {
+    patterns: [/antes.*después|antes.*despues|antes.?y.?después|comparación|comparacion|efecto.*ba|baEffect|baProjects|pestañas|tab.*botón|deslizador|wipe|flip|hover.*efecto|before.*after/i],
+    response: () => `
+<h3>↔️ Paso 5 — Sección Antes y Después</h3>
+
+<h3>Paso 5A — Elige tu Efecto</h3>
+Primero abre <code>effects-picker.html</code> en tu navegador — muestra los cuatro efectos en vivo para que puedas elegir antes de comprometerte. Luego busca <code>baEffect</code> en tu plantilla y reemplaza el valor con la palabra del efecto que elegiste.
+
+Efectos disponibles: <span class="tag">slider</span> <span class="tag">wipe</span> <span class="tag">hover</span> <span class="tag">flip</span>
+
+<h3>Paso 5B — Orientación de la Imagen</h3>
+Cada proyecto puede tener su propia proporción de aspecto. Configura la orientación por proyecto para que las imágenes horizontales y verticales se vean correctas.
+
+<h3>Paso 5C — Vincula tus Imágenes</h3>
+<ul>
+  <li>Todas las imágenes deben estar en tu subcarpeta <code>images/</code>.</li>
+  <li>Busca <code>baProjects</code> y reemplaza solo la parte del nombre del archivo después de <code>images/</code>.</li>
+  <li>Mantén el prefijo <code>images/</code> exactamente como está.</li>
+  <li>Agrega un pie de foto para cada proyecto describiendo la transformación.</li>
+</ul>
+
+<h3>Paso 5D — Actualiza los Botones de Pestañas</h3>
+Busca la sección <code>ba-project-tabs</code> y actualiza el texto de cada botón para que coincida con los nombres reales de tus proyectos.
+
+<strong>Nota de la rúbrica:</strong> Necesitas <strong>mínimo 4 comparaciones antes/después</strong>, y la función interactiva debe funcionar correctamente. <span class="tag">Req. Contenido</span> <span class="tag">Req. Funcionalidad</span>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('aos')">Paso 6: Animaciones de Desplazamiento</span>
+</div>`
+  },
+
+  aos: {
+    patterns: [/animación|animacion|desplazamiento|scroll|data-aos|efecto.*nombre|aparecer|fade|zoom|slide.*arriba|duración|duracion|retraso|aos/i],
+    response: () => `
+<h3>🌀 Paso 6 — Animaciones al Desplazar (AOS)</h3>
+AOS (Animate On Scroll) hace que los elementos se animen al aparecer en pantalla mientras los visitantes desplazan la página. Los efectos se aplican con un solo atributo HTML.
+
+<h3>Cómo aplicar una animación:</h3>
+Agrega <code>data-aos="nombre-del-efecto"</code> a cualquier elemento. Ejemplo:
+<code>&lt;div data-aos="fade-up"&gt;</code>
+
+<h3>Efectos populares (27 en total):</h3>
+<div class="chip-row">
+  <span class="tag">fade-up</span><span class="tag">fade-down</span><span class="tag">fade-left</span>
+  <span class="tag">fade-right</span><span class="tag">zoom-in</span><span class="tag">zoom-out</span>
+  <span class="tag">flip-left</span><span class="tag">flip-right</span><span class="tag">slide-up</span>
+</div>
+Previsualiza los 27 efectos en: <code>michalsnik.github.io/aos</code>
+
+<h3>Controles de tiempo opcionales:</h3>
+<ul>
+  <li><code>data-aos-duration="1000"</code> — duración de la animación (ms). Predeterminado: 800</li>
+  <li><code>data-aos-delay="200"</code> — retraso antes de iniciar (prueba 0, 100, 200, 400)</li>
+  <li><code>data-aos-offset="150"</code> — píxeles desde abajo antes de activarse</li>
+</ul>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('publish')">Paso 7: Publicar</span>
+</div>`
+  },
+
+  publish: {
+    patterns: [/publicar|netlify|github.*page|google.*site|hospedar|alojar|url.*en vivo|url.*live|desplegar|deploy|accesible|antes.*publicar|publish|host/i],
+    response: () => `
+<h3>🚀 Paso 7 — Publicar tu Portafolio</h3>
+
+<h3>Antes de Publicar — Lista de Verificación:</h3>
+<div class="check-item"><span class="check-icon">✅</span><span>El archivo HTML se llama <code>portfolio-template.html</code> (o renómbralo a <code>index.html</code>)</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Todas las imágenes están dentro de la subcarpeta <code>images/</code></span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Nombre, bio, correo electrónico y todas las secciones ✏️ están actualizadas</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Abre en el navegador — verifica que todo se vea correcto</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Todas las imágenes cargan (sin marcadores de imagen rota)</span></div>
+
+<h3>Publicar con Netlify Drop (lo más fácil):</h3>
+<ul>
+  <li>Ve a <strong>netlify.com/drop</strong></li>
+  <li>Arrastra y suelta tu <em>carpeta completa del portafolio</em> en la página</li>
+  <li>¡Obtén una URL en vivo en aproximadamente <strong>10 segundos</strong> — sin necesidad de cuenta!</li>
+</ul>
+
+<h3>Personalizar tu URL de Netlify:</h3>
+Con una cuenta gratuita de Netlify, ve a <strong>Configuración del sitio → Detalles del sitio → Cambiar nombre del sitio</strong> para obtener una URL personalizada como <code>nombre-apellido-portafolio.netlify.app</code>.
+
+Otros servidores aprobados: <strong>GitHub Pages</strong>, <strong>Google Sites</strong>
+
+<strong>Nota de la rúbrica:</strong> Tu sitio debe ser <strong>públicamente accesible</strong> a través de un servidor aprobado. <span class="tag">Req. Funcionalidad</span>`
+  },
+
+  rubric: {
+    patterns: [/rúbrica|rubrica|puntaje|puntos|calificación|calificacion|nota|cómo.*calific|como.*calific|evaluación|evaluacion|100.*punto|qué.*calific/i],
+    response: () => `
+<h3>📋 Resumen de la Rúbrica — 100 Puntos en Total</h3>
+La rúbrica tiene tres categorías. Haz clic en cada una para ver los detalles:
+
+<h3>📝 Contenido <span class="pts-badge">~40 pts</span></h3>
+<ul>
+  <li>Mínimo 4 obras horizontales (paisaje) en la Galería 1</li>
+  <li>Mínimo 4 obras verticales (retrato) en la Galería 2</li>
+  <li>Mínimo 4 comparaciones antes/después</li>
+  <li>Todos los campos de texto actualizados y personalizados (nombre, correo, bio, etiquetas)</li>
+  <li>Todos los data-atributos del proyecto + slide-info completados correctamente</li>
+  <li>Gramática y puntuación correctas</li>
+</ul>
+
+<h3>🎨 Diseño <span class="pts-badge">~30 pts</span></h3>
+<ul>
+  <li>Personalización visual — no es una copia del sitio de ejemplo</li>
+  <li>Color y estilo cohesivos en todo el portafolio</li>
+  <li>Par de fuentes Google personalizado (serif/display + sans-serif)</li>
+  <li>Fondo de partículas personalizado desde el predeterminado</li>
+</ul>
+
+<h3>⚙️ Funcionalidad <span class="pts-badge">~30 pts</span></h3>
+<ul>
+  <li>El portafolio está publicado y es públicamente accesible</li>
+  <li>Ambos carruseles de galería se desplazan/repiten y el lightbox funciona</li>
+  <li>La función interactiva Antes y Después funciona correctamente</li>
+  <li>Todas las etiquetas de datos y slide-info son precisas y funcionales</li>
+</ul>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('content_req')">Detalles de Contenido</span>
+  <span class="chip" onclick="askTopic('design_req')">Detalles de Diseño</span>
+  <span class="chip" onclick="askTopic('function_req')">Detalles de Funcionalidad</span>
+</div>`
+  },
+
+  content_req: {
+    patterns: [/requisito.*contenido|contenido.*requisito|cuántas.*obras|cuantas.*obras|mínimo.*obra|minimo.*obra|4.*paisaje|4.*retrato|campo.*texto|todos.*campo|gramática|gramatica|puntuación|puntuacion/i],
+    response: () => `
+<h3>✅ Requisitos de Contenido</h3>
+
+<h3>Cantidad de Obras:</h3>
+<div class="check-item"><span class="warn-icon">🖼️</span><span>Mínimo <strong>4 obras horizontales (paisaje)</strong> en la Galería 1</span></div>
+<div class="check-item"><span class="warn-icon">🖼️</span><span>Mínimo <strong>4 obras verticales (retrato)</strong> en la Galería 2</span></div>
+<div class="check-item"><span class="warn-icon">↔️</span><span>Mínimo <strong>4 comparaciones</strong> antes/después</span></div>
+
+<h3>Personalización de Texto:</h3>
+<div class="check-item"><span class="check-icon">✅</span><span>Actualiza todos los campos de nombre: logo de navegación, encabezado del hero, copyright del pie de página</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Reemplaza el correo electrónico de ejemplo con tu <strong>correo escolar</strong></span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Escribe una <strong>biografía "Sobre mí"</strong> personalizada (reemplaza <em>ambos</em> párrafos de ejemplo)</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Actualiza las etiquetas de herramientas/software para reflejar las herramientas que <em>realmente usas</em></span></div>
+
+<h3>Cada obra exhibida debe tener:</h3>
+<div class="check-item"><span class="check-icon">✅</span><span><code>data-category</code> — medio o software usado (ej. "Photoshop")</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span><code>data-title</code> — título de la obra</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span><code>data-desc</code> — breve descripción</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>La <strong>sección slide-info</strong> (etiqueta visible, título h3, descripción) debe coincidir con los atributos de datos</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Etiquetas de pestañas y pies de foto de antes/después personalizados</span></div>
+
+<h3>Gramática y Puntuación:</h3>
+Todo el texto escrito debe ser gramaticalmente correcto con puntuación adecuada.`
+  },
+
+  design_req: {
+    patterns: [/requisito.*diseño|diseño.*requisito|originalidad|original|personalización visual|cohes|color.*consist|consist.*color|fuente.*requisito|partícula.*requisito|réplica|copiar.*ejemplo/i],
+    response: () => `
+<h3>🎭 Requisitos de Diseño</h3>
+
+<div class="check-item"><span class="warn-icon">🎨</span><span><strong>Originalidad</strong> — tu portafolio debe mostrar personalización visual y <em>no</em> debe ser una réplica exacta del sitio de ejemplo. Cambia colores, fuentes, detalles del diseño, etc.</span></div>
+
+<div class="check-item"><span class="warn-icon">🖌️</span><span><strong>Consistencia de Color y Estilo</strong> — los colores y estilos visuales deben ser cohesivos y consistentes en <em>todas las secciones</em> del sitio. Usa tus variables CSS de color para mantener todo sincronizado.</span></div>
+
+<div class="check-item"><span class="warn-icon">🔡</span><span><strong>Personalización de Fuentes</strong> — selecciona y aplica un par de fuentes personalizado de Google Fonts:
+  <ul>
+    <li>Una fuente <strong>serif o display</strong> para los encabezados (<code>--font-heading</code>)</li>
+    <li>Una fuente <strong>sans-serif</strong> para el texto del cuerpo (<code>--font-body</code>)</li>
+    <li>Actualiza tanto el <code>&lt;link&gt;</code> de Google Fonts como las dos variables CSS</li>
+  </ul>
+</span></div>
+
+<div class="check-item"><span class="warn-icon">✨</span><span><strong>Personalización de Partículas</strong> — el estilo del fondo de partículas y/o sus ajustes deben cambiarse del predeterminado <code>'stars'</code>. Cualquiera de las otras opciones cuenta.</span></div>
+
+Explora fuentes en: <code>fonts.google.com</code>`
+  },
+
+  function_req: {
+    patterns: [/requisito.*funcionalidad|funcionalidad.*requisito|función.*requisito|funcionar|accesible.*requisito|carrusel.*funcionar|funcionar.*carrusel|antes.*después.*funcionar/i],
+    response: () => `
+<h3>⚙️ Requisitos de Funcionalidad</h3>
+
+<div class="check-item"><span class="warn-icon">🌐</span><span><strong>Publicado y Accesible</strong> — el portafolio completado debe ser públicamente accesible a través de GitHub Pages, Google Sites u otro servicio de alojamiento web gratuito aprobado. Envía la URL en vivo.</span></div>
+
+<div class="check-item"><span class="warn-icon">🖼️</span><span><strong>Galerías</strong> — ambos carruseles de galería deben desplazarse y repetirse correctamente. Hacer clic en cualquier tarjeta debe abrir el lightbox con la <strong>imagen e información correctas</strong>.</span></div>
+
+<div class="check-item"><span class="warn-icon">↔️</span><span><strong>Antes y Después</strong> — todos los proyectos deben mostrarse correctamente y la función de comparación interactiva (deslizador, wipe, hover o flip) debe funcionar según lo previsto.</span></div>
+
+<div class="check-item"><span class="warn-icon">🏷️</span><span>Las <strong>etiquetas de datos</strong> (<code>data-category</code>, <code>data-title</code>, <code>data-desc</code>) y las secciones <code>slide-info</code> deben ser precisas y funcionales en ambas galerías.</span></div>`
+  },
+
+  checklist: {
+    patterns: [/lista.*verificación|lista.*verificacion|verificación.*final|checklist|listo.*entregar|listo.*enviar|entregar|enviar|qué.*necesito|que.*necesito|terminar|acabar|completar/i],
+    response: () => `
+<h3>📝 Lista de Verificación Final para Entregar</h3>
+
+<h3>Archivos y Carpeta</h3>
+<div class="check-item"><span class="check-icon">✅</span><span>La carpeta del portafolio tiene: <code>portfolio-template.html</code> + subcarpeta <code>images/</code></span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Todas las imágenes están dentro de la subcarpeta <code>images/</code></span></div>
+
+<h3>Contenido</h3>
+<div class="check-item"><span class="check-icon">✅</span><span>Mínimo <strong>4 obras horizontales</strong> en la Galería 1</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Mínimo <strong>4 obras verticales</strong> en la Galería 2</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Mínimo <strong>4 comparaciones</strong> antes/después</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Nombre, correo, bio y etiquetas de herramientas actualizados</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Todos los <code>data-category</code>, <code>data-title</code>, <code>data-desc</code> y slide-info completados y coincidentes</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Gramática y puntuación correctas</span></div>
+
+<h3>Diseño</h3>
+<div class="check-item"><span class="check-icon">✅</span><span>Colores cambiados — no es una copia del sitio de ejemplo</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Par de fuentes Google personalizado aplicado (1 serif/display + 1 sans-serif)</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Fondo de partículas cambiado del predeterminado <code>'stars'</code></span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>El estilo es cohesivo en todas las secciones</span></div>
+
+<h3>Funcionalidad</h3>
+<div class="check-item"><span class="check-icon">✅</span><span>Abre el archivo en el navegador — todo se ve correcto, sin imágenes rotas</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>Ambos carruseles de galería se desplazan, repiten y el lightbox funciona</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>La sección Antes y Después funciona con tu efecto elegido</span></div>
+<div class="check-item"><span class="check-icon">✅</span><span>El sitio está publicado y la URL en vivo es accesible</span></div>
+
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('publish')">Cómo Publicar</span>
+  <span class="chip" onclick="askTopic('rubric')">Rúbrica Completa</span>
+</div>`
+  },
+
+  gallery_animation: {
+    patterns: [/animación.*galería|galería.*animación|swiper.*efecto|efecto.*galería|coverflow|cubo|cube|galería.*desvanec|loop.*galería|galería.*loop/i],
+    response: () => `
+<h3>🎠 Efecto de Animación de la Galería</h3>
+Desplázate hacia abajo en tu código hasta la sección JavaScript y busca la configuración de la galería. Reemplaza <code>'coverflow'</code> con cualquiera de estas opciones:
+<div class="chip-row">
+  <span class="tag">coverflow</span><span class="tag">slide</span><span class="tag">fade</span>
+  <span class="tag">cube</span><span class="tag">flip</span><span class="tag">creative</span>
+</div>
+Previsualiza los 6 estilos en vivo en: <code>swiperjs.com/demos</code>
+
+<h3>Renombrar los Encabezados de la Galería</h3>
+Para cambiar los títulos de sección encima de cada galería, busca <code>Gallery 1: Landscape Work</code> y <code>Gallery 2: Portrait Work</code> y reemplázalos con tus propios títulos (ej. "Proyectos de Fotografía" o "Trabajos de Ilustración").`
+  },
+
+  help: {
+    patterns: [/ayuda|qué puedes|que puedes|qué sabes|que sabes|temas|opciones|qué preguntar|que preguntar|menú|menu|help/i],
+    response: () => `
+<h3>🤖 En Qué Te Puedo Ayudar</h3>
+¡Sé todo sobre tu proyecto de Portafolio de Artes Digitales! Esto es lo que me puedes preguntar:
+
+<h3>📖 Pasos de la Guía</h3>
+<ul>
+  <li>Configuración de carpetas antes de abrir Dreamweaver</li>
+  <li>Abrir la plantilla en Dreamweaver</li>
+  <li>Cambiar colores, fuentes y el fondo de partículas</li>
+  <li>Agregar tu información personal, nombre, bio y correo</li>
+  <li>Configurar la galería y agregar tarjetas de proyecto</li>
+  <li>La sección Antes y Después y elegir un efecto</li>
+  <li>Animaciones de desplazamiento (AOS)</li>
+  <li>Publicar con Netlify, GitHub Pages o Google Sites</li>
+</ul>
+
+<h3>📋 Rúbrica y Calificación</h3>
+<ul>
+  <li>Requisitos de contenido (cuántas obras necesitas)</li>
+  <li>Requisitos de diseño (fuentes, colores, originalidad)</li>
+  <li>Requisitos de funcionalidad (qué debe funcionar)</li>
+  <li>Lista de verificación final para entregar</li>
+</ul>
+
+¡Escribe tu pregunta de forma natural — o haz clic en un tema en la barra lateral!`
+  }
+};
+
+/* ════════════════════════════════════════════════
+   MOTOR DE COINCIDENCIA
+   ════════════════════════════════════════════════ */
+function findResponse(text) {
+  const lower = text.toLowerCase().trim();
+
+  if (KB.greeting.patterns.some(p => p.test(lower))) return KB.greeting.response();
+
+  let best = null, bestScore = 0;
+  for (const [key, entry] of Object.entries(KB)) {
+    if (!entry.patterns) continue;
+    for (const pattern of entry.patterns) {
+      if (pattern.test(text)) {
+        const score = pattern.source.length;
+        if (score > bestScore) { bestScore = score; best = entry; }
+      }
+    }
+  }
+  if (best) return best.response();
+
+  // Mapa de palabras clave de respaldo (español + inglés)
+  const keywordMap = {
+    folder:       ['carpeta','archivo','organiz','estructura','folder','file','setup'],
+    dreamweaver:  ['dreamweaver','dw','abrir','editar','open','edit'],
+    colors:       ['color','fuente','hex','paleta','palette','coolors','tipograf','font'],
+    particles:    ['partícula','particula','fondo','hero','estrellas','stars','particle'],
+    personal:     ['nombre','correo','bio','sobre mí','sobre mi','logo','personal','email','name'],
+    gallery:      ['galería','galeria','proyecto','tarjeta','diapositiva','carrusel','paisaje','retrato','gallery','project','slide'],
+    lightbox:     ['lightbox','pantalla completa','ventana emergente','overlay','popup'],
+    beforeafter:  ['antes','después','despues','comparación','comparacion','deslizador','wipe','flip','hover','efecto','before','after'],
+    aos:          ['animación','animacion','desplazamiento','scroll','fade','zoom','data-aos','aos'],
+    publish:      ['publicar','netlify','github','hospedar','alojar','desplegar','url','deploy','publish','host'],
+    rubric:       ['rúbrica','rubrica','calificación','calificacion','punto','nota','puntaje','rubric','grade','score'],
+    content_req:  ['contenido','cuántas','cuantas','mínimo','minimo','requisito','obra','content','minimum'],
+    design_req:   ['diseño','diseno','originalidad','cohes','consistente','design','originality'],
+    function_req: ['funcionalidad','funcionar','accesible','carrusel','function','accessible'],
+    checklist:    ['lista','verificación','verificacion','entregar','enviar','terminar','listo','checklist','submit','done']
+  };
+
+  let topKey = null, topCount = 0;
+  for (const [key, words] of Object.entries(keywordMap)) {
+    const count = words.filter(w => lower.includes(w)).length;
+    if (count > topCount) { topCount = count; topKey = key; }
+  }
+  if (topKey && topCount > 0 && KB[topKey]) return KB[topKey].response();
+
+  return `<h3>🤔 Hmm, no estoy seguro de eso.</h3>
+Intenta reformular tu pregunta o elige un tema en la barra lateral. También puedes preguntarme cosas como:
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('checklist')">¿Qué necesito para entregar?</span>
+  <span class="chip" onclick="askTopic('gallery')">¿Cómo agrego proyectos?</span>
+  <span class="chip" onclick="askTopic('rubric')">¿Cómo me califican?</span>
+  <span class="chip" onclick="askTopic('publish')">¿Cómo publico?</span>
+</div>`;
+}
+
+/* ════════════════════════════════════════════════
+   INTERFAZ DEL CHAT
+   ════════════════════════════════════════════════ */
+const messagesEl = document.getElementById('messages');
+
+function appendMsg(html, role) {
+  const row = document.createElement('div');
+  row.className = `msg-row ${role}`;
+  const av = document.createElement('div');
+  av.className = `msg-avatar ${role === 'bot' ? 'bot-av' : 'user-av'}`;
+  av.textContent = role === 'bot' ? '🎨' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  if (role === 'bot') bubble.innerHTML = html;
+  else bubble.textContent = html;
+  if (role === 'bot') { row.appendChild(av); row.appendChild(bubble); }
+  else { row.appendChild(av); row.appendChild(bubble); }
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showTyping() {
+  const row = document.createElement('div');
+  row.className = 'msg-row bot';
+  row.id = 'typing';
+  const av = document.createElement('div');
+  av.className = 'msg-avatar bot-av'; av.textContent = '🎨';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = '<div class="typing-bubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  row.appendChild(av); row.appendChild(bubble);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return row;
+}
+
+function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  autoResize(input);
+  appendMsg(text, 'user');
+  const typing = showTyping();
+  setTimeout(() => {
+    typing.remove();
+    appendMsg(findResponse(text), 'bot');
+  }, 420 + Math.random() * 280);
+}
+
+function askTopic(key) {
+  const labels = {
+    folder:           'Ayuda con la configuración de carpetas',
+    dreamweaver:      '¿Cómo abro la plantilla en Dreamweaver?',
+    colors:           '¿Cómo cambio mis colores y fuentes?',
+    particles:        '¿Cómo cambio el fondo de partículas?',
+    personal:         '¿Qué información personal necesito agregar?',
+    gallery:          '¿Cómo agrego mis proyectos a la galería?',
+    lightbox:         '¿Cómo funciona el lightbox?',
+    beforeafter:      '¿Cómo configuro la sección Antes y Después?',
+    aos:              '¿Cómo agrego animaciones de desplazamiento?',
+    publish:          '¿Cómo publico mi portafolio?',
+    rubric:           '¿Puedes darme un resumen de la rúbrica?',
+    content_req:      '¿Cuáles son los requisitos de contenido?',
+    design_req:       '¿Cuáles son los requisitos de diseño?',
+    function_req:     '¿Cuáles son los requisitos de funcionalidad?',
+    checklist:        '¿Qué necesito completar antes de entregar?',
+    gallery_animation:'¿Cómo cambio la animación de la galería?'
+  };
+  const label = labels[key] || key;
+  appendMsg(label, 'user');
+  const typing = showTyping();
+  setTimeout(() => {
+    typing.remove();
+    const entry = KB[key];
+    appendMsg(entry ? entry.response() : findResponse(label), 'bot');
+  }, 350 + Math.random() * 250);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+/* ── Mensaje de bienvenida ── */
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    appendMsg(`
+<h3>👋 ¡Bienvenido/a al Asistente de Portafolio de Artes Digitales!</h3>
+Estoy aquí para responder tus preguntas sobre la <strong>guía del portafolio</strong> y la <strong>rúbrica de calificación</strong>. ¡Pregúntame lo que necesites — o haz clic en un tema a la izquierda para comenzar!
+<div class="chip-row">
+  <span class="chip" onclick="askTopic('checklist')">📝 Lista Final</span>
+  <span class="chip" onclick="askTopic('rubric')">📋 Resumen de la Rúbrica</span>
+  <span class="chip" onclick="askTopic('gallery')">🖼️ Agregar Proyectos</span>
+  <span class="chip" onclick="askTopic('publish')">🚀 Cómo Publicar</span>
+  <span class="chip" onclick="askTopic('colors')">🎨 Colores y Fuentes</span>
+</div>`, 'bot');
+  }, 300);
+});
+</script>
+</body>
+</html>
